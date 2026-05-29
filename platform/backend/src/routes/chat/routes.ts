@@ -507,12 +507,18 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
               );
             }
 
+            // Cleared on every execute() exit path: the normal completion below
+            // and the top-level onError (which fires when execute throws, e.g.
+            // a non-context-length error during the context-trim probe).
+            let heartbeatInterval: ReturnType<typeof setInterval> | undefined;
+
             // Create stream with token usage data support
             const uiMessageStream = createUIMessageStream({
               // Preserve incoming message IDs so the client updates existing
               // assistant messages instead of rendering duplicate ones.
               originalMessages: messages as UIMessage[],
               onError: (error) => {
+                if (heartbeatInterval) clearInterval(heartbeatInterval);
                 // unlike the tool-level stream handler, a NoSuchToolError here
                 // is not a recoverable tool result: it must mark the run failed
                 // and persist, so it falls through to the normal error path.
@@ -588,7 +594,7 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
               execute: async ({ writer }) => {
                 // Send heartbeat every 5s to prevent connection drops
                 // during long-running tool executions / subagent calls.
-                const heartbeatInterval = setInterval(() => {
+                heartbeatInterval = setInterval(() => {
                   try {
                     writer.write({
                       type: "data-heartbeat",
@@ -770,10 +776,11 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
                   } catch (error) {
                     const maxTokens = parseMaxInputTokens(error);
                     if (maxTokens !== null) {
-                      const trimmed = trimMessagesToTokenLimit(
-                        modelMessages,
+                      const trimmed = trimMessagesToTokenLimit({
+                        messages: modelMessages,
                         maxTokens,
-                      );
+                        systemPrompt,
+                      });
                       logger.info(
                         {
                           maxTokens,
