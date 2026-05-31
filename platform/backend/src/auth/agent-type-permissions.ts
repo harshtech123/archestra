@@ -1,11 +1,11 @@
-import {
-  type Action,
-  type AgentType,
-  getResourceForAgentType,
-  type Resource,
-} from "@shared";
+import { type Action, getResourceForAgentType, type Resource } from "@shared";
 import { UserModel } from "@/models";
-import { type AgentScope, ApiError } from "@/types";
+import {
+  type AgentScope,
+  type AgentType,
+  AgentTypeSchema,
+  ApiError,
+} from "@/types";
 import { userHasPermission } from "./utils";
 
 /** @public — re-exported for testability */
@@ -105,6 +105,12 @@ export async function getAgentTypePermissionChecker(params: {
       return AGENT_TYPE_RESOURCES.some(
         (r) => permissions[r]?.includes("read") ?? false,
       );
+    },
+    getAgentTypesWithPermission(action: Action): AgentType[] {
+      return AgentTypeSchema.options.filter((agentType) => {
+        const resource = getResourceForAgentType(agentType);
+        return permissions[resource]?.includes(action) ?? false;
+      });
     },
     hasAnyAdminPermission(): boolean {
       return AGENT_TYPE_RESOURCES.some(
@@ -229,6 +235,8 @@ export interface AgentTypePermissionChecker {
   isTeamAdmin(agentType: AgentType): boolean;
   /** Returns true if the user has read on any of the three agent-type resources. */
   hasAnyReadPermission(): boolean;
+  /** Returns agent types for which the user has the requested permission. */
+  getAgentTypesWithPermission(action: Action): AgentType[];
   /** Returns true if the user has admin on any of the three agent-type resources. */
   hasAnyAdminPermission(): boolean;
 }
