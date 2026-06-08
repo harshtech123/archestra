@@ -204,7 +204,6 @@ export function ChatPageContent({
   // Skill invoked via slash command on the first message of a new chat,
   // held until the conversation exists and the message can be sent.
   const pendingSkillRef = useRef<ChatSkillMetadata | undefined>(undefined);
-  const userMessageJustEdited = useRef(false);
   const pendingInitialSendConversationRef = useRef<string | undefined>(
     undefined,
   );
@@ -944,6 +943,7 @@ export function ChatPageContent({
     [messages, chatSession?.earlyToolUiStarts],
   );
   const sendMessage = chatSession?.sendMessage;
+  const regenerateUserMessage = chatSession?.regenerateUserMessage;
   const status = chatSession?.status ?? "ready";
   const setMessages = chatSession?.setMessages;
   const stop = chatSession?.stop;
@@ -1226,11 +1226,6 @@ export function ChatPageContent({
   useEffect(() => {
     if (!setMessages || !sendMessage) {
       return;
-    }
-
-    // Clear the edit flag when status changes to ready (streaming finished)
-    if (status === "ready" && userMessageJustEdited.current) {
-      userMessageJustEdited.current = false;
     }
 
     const hasPendingInitialMessage =
@@ -2198,29 +2193,7 @@ export function ChatPageContent({
                       }
                       chatErrors={conversation?.chatErrors ?? []}
                       compactions={conversation?.compactions ?? []}
-                      onUserMessageEdit={(
-                        editedMessage,
-                        updatedMessages,
-                        editedPartIndex,
-                      ) => {
-                        if (setMessages && sendMessage) {
-                          userMessageJustEdited.current = true;
-                          const messagesWithoutEditedMessage =
-                            updatedMessages.slice(0, -1);
-                          setMessages(messagesWithoutEditedMessage);
-                          const editedPart =
-                            editedMessage.parts?.[editedPartIndex];
-                          const editedText =
-                            editedPart?.type === "text" ? editedPart.text : "";
-                          if (editedText?.trim()) {
-                            sendMessage({
-                              role: "user",
-                              parts: [{ type: "text", text: editedText }],
-                              metadata: { createdAt: new Date().toISOString() },
-                            });
-                          }
-                        }
-                      }}
+                      onRegenerateUserMessage={regenerateUserMessage}
                       error={error}
                       onToolApprovalResponse={
                         addToolApprovalResponse

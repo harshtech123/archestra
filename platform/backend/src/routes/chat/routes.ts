@@ -215,7 +215,7 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
     },
     async (request, reply) => {
       const {
-        body: { id: conversationId, messages },
+        body: { id: conversationId, messages, trigger },
         user,
         organizationId,
       } = request;
@@ -1080,11 +1080,22 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
                     // Only persist if not already persisted by onError
                     if (!messagesPersisted && conversationId) {
                       try {
-                        await persistNewMessages(
-                          conversationId,
-                          finalMessages,
-                          "onFinish",
-                        );
+                        if (trigger === "regenerate-message") {
+                          // Replace the regenerated turn atomically: delete the
+                          // stale messages below the anchor and write the new
+                          // turn in one transaction (no destructive pre-delete).
+                          await persistRegeneratedTurn({
+                            conversationId,
+                            requestMessages: messages,
+                            finalMessages,
+                          });
+                        } else {
+                          await persistNewMessages(
+                            conversationId,
+                            finalMessages,
+                            "onFinish",
+                          );
+                        }
                         messagesPersisted = true;
                       } catch (error) {
                         logger.error(
@@ -2669,6 +2680,70 @@ function formatUnavailableToolErrorDetails(
     null,
     2,
   )}`;
+}
+
+/**
+ * Regenerate a turn: find the user message being regenerated, delete the stale
+ * messages below it, and persist the freshly generated turn — atomically.
+ *
+ * The reads (what's stale, what's new) run first; the transaction then wraps
+ * only the two writes, so they commit together. That is the point: nothing is
+ * deleted unless the new turn is written in the same commit, so an interrupted
+ * or failed regenerate can never leave the conversation with the old turn gone
+ * and no replacement. Anchor and deletion are matched by id, never `createdAt`.
+ *
+ * @param requestMessages - the thread the client sent, ending at the user
+ *   message being regenerated (the anchor)
+ * @param finalMessages - the server-authoritative thread after generation
+ */
+async function persistRegeneratedTurn(params: {
+  conversationId: string;
+  requestMessages: unknown[];
+  finalMessages: unknown[];
+}): Promise<void> {
+  const { conversationId, requestMessages, finalMessages } = params;
+  const existing = await MessageModel.findByConversation(conversationId);
+
+  // The user message being regenerated is the last one the client sent.
+  // Everything stored below it is the stale turn to replace.
+  const anchor = (requestMessages as ChatMessage[]).at(-1);
+  const anchorIds = new Set(anchor ? getUiMessageIdentityIds(anchor) : []);
+  const anchorIndex = existing.findIndex((row) =>
+    storedMessageIds(row).some((id) => anchorIds.has(id)),
+  );
+  const staleIds =
+    anchorIndex < 0 ? [] : existing.slice(anchorIndex + 1).map((row) => row.id);
+
+  // The new turn is what the model just produced (not already stored).
+  const newMessages = getMessagesNotYetPersisted({
+    existingMessages: existing,
+    uiMessages: finalMessages as ChatMessage[],
+  });
+  const now = Date.now();
+  const newRows = normalizeChatMessagesForPersistence(newMessages).map(
+    (msg, index) => ({
+      conversationId,
+      role: msg.role ?? "assistant",
+      content: msg,
+      createdAt: new Date(now + index),
+    }),
+  );
+
+  await withDbTransaction(async (tx) => {
+    await MessageModel.deleteByIds(staleIds, tx);
+    await MessageModel.bulkCreate(newRows, tx);
+  });
+
+  logger.info(
+    { conversationId, deleted: staleIds.length, persisted: newRows.length },
+    "Regenerate: atomically replaced trailing turn",
+  );
+}
+
+/** A stored row's identity: its primary key plus the AI SDK id in its content. */
+function storedMessageIds(row: { id: string; content: unknown }): string[] {
+  const contentId = getMessageContentId(row.content);
+  return contentId ? [row.id, contentId] : [row.id];
 }
 
 /**
