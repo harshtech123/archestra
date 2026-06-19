@@ -21335,6 +21335,7 @@ export type GetChatConversationsResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -21352,6 +21353,7 @@ export type GetChatConversationsResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -21495,6 +21497,7 @@ export type CreateChatConversationResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -21512,6 +21515,7 @@ export type CreateChatConversationResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -21736,6 +21740,7 @@ export type GetChatConversationResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -21753,6 +21758,7 @@ export type GetChatConversationResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -21899,6 +21905,7 @@ export type UpdateChatConversationResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -21916,6 +21923,7 @@ export type UpdateChatConversationResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -22415,6 +22423,7 @@ export type ForkChatConversationResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -22432,6 +22441,7 @@ export type ForkChatConversationResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -22675,6 +22685,7 @@ export type CompactChatConversationResponses = {
             } | Array<unknown> | null;
             artifact: string | null;
             projectId: string | null;
+            origin: 'user' | 'schedule_trigger';
             pinnedAt: string | null;
             lastMessageAt: string;
             createdAt: string;
@@ -22692,6 +22703,7 @@ export type CompactChatConversationResponses = {
                 visibility: 'organization' | 'team' | 'user';
             } | null;
             projectName?: string | null;
+            projectIcon?: string | null;
             messages: Array<unknown>;
             chatErrors: Array<{
                 id: string;
@@ -23105,6 +23117,7 @@ export type GetSharedConversationResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -23122,6 +23135,7 @@ export type GetSharedConversationResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -23264,6 +23278,7 @@ export type ForkSharedConversationResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -23281,6 +23296,7 @@ export type ForkSharedConversationResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -23425,6 +23441,7 @@ export type GenerateChatConversationTitleResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -23442,6 +23459,7 @@ export type GenerateChatConversationTitleResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -23585,6 +23603,7 @@ export type UpdateChatMessageResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -23602,6 +23621,7 @@ export type UpdateChatMessageResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
@@ -53810,6 +53830,7 @@ export type GetProjectsResponses = {
         id: string;
         name: string;
         description: string | null;
+        icon: string | null;
         isOwner: boolean;
         conversationCount: number;
         visibility: 'organization' | 'team';
@@ -53823,6 +53844,7 @@ export type CreateProjectData = {
     body: {
         name: string;
         description?: string | null;
+        icon?: string | null;
     };
     path?: never;
     query?: never;
@@ -53902,6 +53924,7 @@ export type CreateProjectResponses = {
         id: string;
         name: string;
         description: string | null;
+        icon: string | null;
         isOwner: boolean;
         conversationCount: number;
         visibility: 'organization' | 'team';
@@ -54078,6 +54101,7 @@ export type GetProjectResponses = {
         id: string;
         name: string;
         description: string | null;
+        icon: string | null;
         isOwner: boolean;
         conversationCount: number;
         visibility: 'organization' | 'team';
@@ -54090,7 +54114,9 @@ export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
 
 export type UpdateProjectData = {
     body: {
-        description: string | null;
+        name?: string;
+        description?: string | null;
+        icon?: string | null;
     };
     path: {
         id: string;
@@ -54438,6 +54464,7 @@ export type GetProjectConversationsResponses = {
         title: string | null;
         authorUserId: string;
         authorName: string | null;
+        origin: 'user' | 'schedule_trigger';
         lastMessageAt: string;
         createdAt: string;
         readOnly: boolean;
@@ -54456,6 +54483,7 @@ export type GetScheduleTriggersData = {
         name?: string;
         actorUserIds?: string;
         agentIds?: string;
+        projectId?: string;
         showAll?: boolean;
     };
     url: '/api/schedule-triggers';
@@ -54536,6 +54564,7 @@ export type GetScheduleTriggersResponses = {
             organizationId: string;
             name: string;
             agentId: string;
+            projectId: string | null;
             messageTemplate: string;
             cronExpression: string;
             timezone: string;
@@ -54570,7 +54599,8 @@ export type GetScheduleTriggersResponse = GetScheduleTriggersResponses[keyof Get
 export type CreateScheduleTriggerData = {
     body: {
         name: string;
-        agentId: string;
+        agentId?: string;
+        projectId?: string;
         enabled?: boolean;
         cronExpression: string;
         timezone: string;
@@ -54655,6 +54685,7 @@ export type CreateScheduleTriggerResponses = {
         organizationId: string;
         name: string;
         agentId: string;
+        projectId: string | null;
         messageTemplate: string;
         cronExpression: string;
         timezone: string;
@@ -54845,6 +54876,7 @@ export type GetScheduleTriggerResponses = {
         organizationId: string;
         name: string;
         agentId: string;
+        projectId: string | null;
         messageTemplate: string;
         cronExpression: string;
         timezone: string;
@@ -54871,6 +54903,7 @@ export type UpdateScheduleTriggerData = {
     body: {
         name?: string;
         agentId?: string;
+        projectId?: string;
         enabled?: boolean;
         cronExpression?: string;
         timezone?: string;
@@ -54957,6 +54990,7 @@ export type UpdateScheduleTriggerResponses = {
         organizationId: string;
         name: string;
         agentId: string;
+        projectId: string | null;
         messageTemplate: string;
         cronExpression: string;
         timezone: string;
@@ -55062,6 +55096,7 @@ export type EnableScheduleTriggerResponses = {
         organizationId: string;
         name: string;
         agentId: string;
+        projectId: string | null;
         messageTemplate: string;
         cronExpression: string;
         timezone: string;
@@ -55167,6 +55202,7 @@ export type DisableScheduleTriggerResponses = {
         organizationId: string;
         name: string;
         agentId: string;
+        projectId: string | null;
         messageTemplate: string;
         cronExpression: string;
         timezone: string;
@@ -55588,6 +55624,7 @@ export type CreateScheduleTriggerRunConversationResponses = {
         } | Array<unknown> | null;
         artifact: string | null;
         projectId: string | null;
+        origin: 'user' | 'schedule_trigger';
         pinnedAt: string | null;
         lastMessageAt: string;
         createdAt: string;
@@ -55605,6 +55642,7 @@ export type CreateScheduleTriggerRunConversationResponses = {
             visibility: 'organization' | 'team' | 'user';
         } | null;
         projectName?: string | null;
+        projectIcon?: string | null;
         messages: Array<unknown>;
         chatErrors: Array<{
             id: string;
