@@ -175,6 +175,7 @@ export function buildMcpGatewayTool(params: {
                 sessionId: ctx.sessionId,
                 scheduleTriggerRunId: ctx.scheduleTriggerRunId,
                 abortSignal: ctx.abortSignal,
+                elicitation: ctx.elicitation,
                 contextIsTrusted: toolExecutionContext.contextIsTrusted,
                 approvalRequiredPoliciesHandled: true,
                 tokenAuth: buildTokenAuthContext({
