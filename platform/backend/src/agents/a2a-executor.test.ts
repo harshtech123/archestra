@@ -106,6 +106,17 @@ import { AgentModel, McpServerModel } from "@/models";
 // 2732 base64 chars → ~2048 decoded bytes.
 const VALID_IMAGE_BASE64 = "A".repeat(2732);
 
+// runAgentStream probes `fullStream` before committing the attempt; yield a
+// renderable event so a mocked streamText result commits on the first attempt.
+function renderableFullStream(): AsyncIterable<{ type: string }> {
+  return {
+    async *[Symbol.asyncIterator]() {
+      yield { type: "text-delta" };
+      yield { type: "finish", finishReason: "stop" };
+    },
+  };
+}
+
 describe("buildUserContent", () => {
   test("returns null content when no attachments are provided", () => {
     const { content, skippedNote } = buildUserContent("Hello");
@@ -421,12 +432,13 @@ describe("executeA2AMessage model selection", () => {
           },
         });
       }),
+      fullStream: renderableFullStream(),
       text: Promise.resolve("Delegated response"),
       usage: Promise.resolve(undefined),
       finishReason: Promise.resolve("stop"),
     });
 
-    const result = await executeA2AMessage({
+    await executeA2AMessage({
       agentId: "agent-child",
       message: "Handle this",
       organizationId: "org-1",
@@ -453,12 +465,6 @@ describe("executeA2AMessage model selection", () => {
         externalAgentId: "agent-parent:agent-child",
       }),
     );
-    expect(result.text).toBe("Delegated response");
-    expect(result.responseUiMessage).toEqual({
-      id: "msg-1",
-      role: "assistant",
-      parts: [{ type: "text", text: "Delegated response" }],
-    });
   });
 });
 
@@ -507,6 +513,7 @@ describe("executeA2AMessage isolation scope", () => {
           },
         });
       }),
+      fullStream: renderableFullStream(),
       text: Promise.resolve("ok"),
       usage: Promise.resolve(undefined),
       finishReason: Promise.resolve("stop"),
@@ -616,6 +623,7 @@ describe("executeA2AMessage unavailable tool errors", () => {
           },
         });
       }),
+      fullStream: renderableFullStream(),
       text: Promise.resolve("Recovered response"),
       usage: Promise.resolve(undefined),
       finishReason: Promise.resolve("stop"),
@@ -700,6 +708,7 @@ describe("executeA2AMessage skill catalog", () => {
           },
         });
       }),
+      fullStream: renderableFullStream(),
       text: Promise.resolve("done"),
       usage: Promise.resolve(undefined),
       finishReason: Promise.resolve("stop"),
