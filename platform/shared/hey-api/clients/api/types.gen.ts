@@ -36694,6 +36694,8 @@ export type GetInternalMcpCatalogResponses = {
         }>;
         authorName?: string | null;
         toolCount: number;
+        providesUi?: boolean;
+        appId?: string | null;
     }>;
 };
 
