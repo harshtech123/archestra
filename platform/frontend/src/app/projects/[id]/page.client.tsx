@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ErrorBoundary } from "@/app/_parts/error-boundary";
+import { collapseProjectChats } from "@/app/projects/[id]/project-chats.utils";
 import { ProjectSchedulesSection } from "@/app/projects/[id]/project-schedules-section";
 import { AgentIcon } from "@/components/agent-icon";
 import {
@@ -260,61 +261,79 @@ function ChatsList({
     origin: "user" | "schedule_trigger";
     lastMessageAt: string;
     readOnly: boolean;
+    scheduleTriggerId: string | null;
+    scheduleRunId: string | null;
+    scheduleName: string | null;
   }>;
 }) {
+  // A schedule's runs collapse to one row (its latest run); user chats are shown
+  // as-is. Newest activity first.
+  const chats = collapseProjectChats(conversations);
   return (
     <section>
       <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        Chats
+        Recents
       </h2>
-      {conversations.length === 0 ? (
+      {chats.length === 0 ? (
         <p className="rounded-xl border px-3 py-8 text-center text-sm text-muted-foreground">
           No chats yet — type above to start one.
         </p>
       ) : (
         <div className="space-y-2">
-          {conversations.map((conv) => (
-            <Link
-              key={conv.id}
-              href={`/chat/${conv.id}`}
-              className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5 transition-colors hover:bg-muted/50"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                {conv.origin === "schedule_trigger" ? (
-                  <CalendarClock className="h-4 w-4 text-primary" aria-hidden />
-                ) : (
-                  <MessageCircle className="h-4 w-4 text-primary" aria-hidden />
-                )}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium">
-                    {conv.title ?? "Untitled chat"}
+          {chats.map((conv) => {
+            const isScheduled = conv.origin === "schedule_trigger";
+            // A scheduled row opens its latest run's chat WITH the schedule
+            // context, so the chat sidebar shows the runs navigator for the rest.
+            const href = isScheduled
+              ? `/chat/${conv.id}?scheduleTriggerId=${conv.scheduleTriggerId}&scheduleRunId=${conv.scheduleRunId}`
+              : `/chat/${conv.id}`;
+            return (
+              <Link
+                key={conv.id}
+                href={href}
+                className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5 transition-colors hover:bg-muted/50"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  {isScheduled ? (
+                    <CalendarClock
+                      className="h-4 w-4 text-primary"
+                      aria-hidden
+                    />
+                  ) : (
+                    <MessageCircle
+                      className="h-4 w-4 text-primary"
+                      aria-hidden
+                    />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2">
+                    <span className="truncate text-sm font-medium">
+                      {isScheduled
+                        ? (conv.scheduleName ?? "Scheduled task")
+                        : (conv.title ?? "Untitled chat")}
+                    </span>
+                    {conv.readOnly && (
+                      <Badge variant="outline" className="shrink-0 gap-1">
+                        <Eye className="h-3 w-3" />
+                        read-only
+                      </Badge>
+                    )}
                   </span>
-                  {conv.origin === "schedule_trigger" && (
-                    <Badge variant="outline" className="shrink-0 gap-1">
-                      <CalendarClock className="h-3 w-3" />
-                      scheduled
-                    </Badge>
-                  )}
-                  {conv.readOnly && (
-                    <Badge variant="outline" className="shrink-0 gap-1">
-                      <Eye className="h-3 w-3" />
-                      read-only
-                    </Badge>
-                  )}
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {isScheduled
+                      ? (conv.title ?? "No prompt")
+                      : conv.readOnly
+                        ? `by ${conv.authorName ?? "someone else"}`
+                        : "by you"}
+                  </span>
                 </span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {conv.readOnly
-                    ? `by ${conv.authorName ?? "someone else"}`
-                    : "by you"}
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {formatRelativeTimeFromNow(conv.lastMessageAt)}
                 </span>
-              </span>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {formatRelativeTimeFromNow(conv.lastMessageAt)}
-              </span>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </section>

@@ -149,6 +149,11 @@ interface ChatMessagesProps {
   }) => Promise<void>;
   /** Re-run the original prompt after the user connects a per-user provider. */
   onProviderConnected?: () => void;
+  /**
+   * Scheduled-run only: clear a persisted chat error and resend the prompt.
+   * When set, the inline error card shows a "Try again" button.
+   */
+  onChatErrorRetry?: () => void | Promise<void>;
   error?: Error | null;
   chatErrors?: archestraApiTypes.GetChatConversationResponses["200"]["chatErrors"];
   compactions?: archestraApiTypes.GetChatConversationResponses["200"]["compactions"];
@@ -212,6 +217,7 @@ export function ChatMessages({
   onMessagesUpdate,
   onRegenerateUserMessage,
   onProviderConnected,
+  onChatErrorRetry,
   error = null,
   chatErrors = [],
   compactions = [],
@@ -501,6 +507,7 @@ export function ChatMessages({
                   selectedModel={selectedModel}
                   modelSource={modelSource}
                   onProviderConnected={onProviderConnected}
+                  onRetry={onChatErrorRetry}
                 />
               );
             }
